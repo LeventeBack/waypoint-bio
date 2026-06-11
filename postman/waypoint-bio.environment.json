@@ -1,0 +1,46 @@
+{
+  "id": "waypoint-bio-env",
+  "name": "Waypoint Bio (all services)",
+  "_postman_variable_scope": "environment",
+  "values": [
+    {
+      "key": "profile_service_url",
+      "value": "http://localhost:3010",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "profile_username",
+      "value": "testuser",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "profile_password",
+      "value": "supersecret123",
+      "type": "secret",
+      "enabled": true
+    },
+    {
+      "key": "profile_token",
+      "value": "",
+      "type": "secret",
+      "enabled": true,
+      "description": "Auto-populated by POST /auth/register or POST /auth/login"
+    },
+    {
+      "key": "profile_link_id",
+      "value": "",
+      "type": "default",
+      "enabled": true,
+      "description": "Auto-populated by POST /profiles/me/links"
+    },
+    {
+      "key": "profile_public_username",
+      "value": "testuser",
+      "type": "default",
+      "enabled": true,
+      "description": "Username used for the public GET /profiles/:username route"
+    }
+  ]
+}

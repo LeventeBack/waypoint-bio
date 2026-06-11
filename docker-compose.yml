@@ -1,0 +1,50 @@
+services:
+  postgres-profile:
+    image: postgres:16-alpine
+    container_name: postgres-profile
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${PROFILE_DB_NAME}
+      POSTGRES_USER: ${PROFILE_DB_USER}
+      POSTGRES_PASSWORD: ${PROFILE_DB_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-profile-data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        ["CMD-SHELL", "pg_isready -U ${PROFILE_DB_USER} -d ${PROFILE_DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  profile-service:
+    build:
+      context: ./services/profile-service
+      dockerfile: Dockerfile
+      target: dev
+    container_name: profile-service
+    restart: unless-stopped
+    ports:
+      - "3010:3010"
+    environment:
+      PORT: 3010
+      PROFILE_DB_URL: postgresql://${PROFILE_DB_USER}:${PROFILE_DB_PASSWORD}@postgres-profile:5432/${PROFILE_DB_NAME}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN}
+      NODE_ENV: development
+    depends_on:
+      postgres-profile:
+        condition: service_healthy
+    volumes:
+      - ./services/profile-service:/app # hot-reload: mounts source over image
+      - /app/node_modules # keep container node_modules intact
+      - /app/src/generated # keep generated Prisma client intact
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3010/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres-profile-data:

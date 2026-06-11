@@ -1,0 +1,462 @@
+{
+  "info": {
+    "_postman_id": "waypoint-bio-collection",
+    "name": "Waypoint Bio",
+    "description": "Import this collection together with `waypoint-bio.environment.json`.\n\n**Register** and **Login** auto-store the JWT in `profile_token`. **Create Link** auto-stores the id in `profile_link_id`.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      { "key": "token", "value": "{{profile_token}}", "type": "string" }
+    ]
+  },
+  "item": [
+    {
+      "name": "profile-service",
+      "item": [
+        {
+          "name": "Auth",
+          "item": [
+            {
+              "name": "Register",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (pm.response.code === 201) {",
+                      "  const json = pm.response.json();",
+                      "  pm.environment.set('profile_token', json.accessToken);",
+                      "  pm.test('Returns accessToken', () => pm.expect(json.accessToken).to.be.a('string'));",
+                      "  pm.test('Returns profile without passwordHash', () => {",
+                      "    pm.expect(json.profile).to.not.have.property('passwordHash');",
+                      "    pm.expect(json.profile.username).to.equal(pm.environment.get('profile_username'));",
+                      "  });",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "auth": { "type": "noauth" },
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"{{profile_username}}\",\n  \"password\": \"{{profile_password}}\"\n}"
+                },
+                "url": {
+                  "raw": "{{profile_service_url}}/auth/register",
+                  "host": ["{{profile_service_url}}"],
+                  "path": ["auth", "register"]
+                },
+                "description": "Creates a new account. Stores the returned JWT in `profile_token`."
+              },
+              "response": []
+            },
+            {
+              "name": "Login",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (pm.response.code === 200) {",
+                      "  const json = pm.response.json();",
+                      "  pm.environment.set('profile_token', json.accessToken);",
+                      "  pm.test('Returns accessToken', () => pm.expect(json.accessToken).to.be.a('string'));",
+                      "  pm.test('Returns profile without passwordHash', () => {",
+                      "    pm.expect(json.profile).to.not.have.property('passwordHash');",
+                      "  });",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "auth": { "type": "noauth" },
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"{{profile_username}}\",\n  \"password\": \"{{profile_password}}\"\n}"
+                },
+                "url": {
+                  "raw": "{{profile_service_url}}/auth/login",
+                  "host": ["{{profile_service_url}}"],
+                  "path": ["auth", "login"]
+                },
+                "description": "Logs in and stores the JWT in `profile_token`."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Profiles",
+          "item": [
+            {
+              "name": "Get my profile",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                      "pm.test('No passwordHash in response', () => {",
+                      "  pm.expect(pm.response.json()).to.not.have.property('passwordHash');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{profile_service_url}}/profiles/me",
+                  "host": ["{{profile_service_url}}"],
+                  "path": ["profiles", "me"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update my profile",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                      "pm.test('Bio was updated', () => {",
+                      "  pm.expect(pm.response.json().bio).to.equal('Building in public.');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"bio\": \"Building in public.\",\n  \"theme\": \"dark\"\n}"
+                },
+                "url": {
+                  "raw": "{{profile_service_url}}/profiles/me",
+                  "host": ["{{profile_service_url}}"],
+                  "path": ["profiles", "me"]
+                },
+                "description": "Partial update: bio, theme and avatarUrl are all optional."
+              },
+              "response": []
+            },
+            {
+              "name": "Get public profile by username",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                      "pm.test('Username matches', () => {",
+                      "  pm.expect(pm.response.json().username).to.equal(pm.environment.get('profile_public_username'));",
+                      "});",
+                      "pm.test('No passwordHash in response', () => {",
+                      "  pm.expect(pm.response.json()).to.not.have.property('passwordHash');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "auth": { "type": "noauth" },
+                "method": "GET",
+                "url": {
+                  "raw": "{{profile_service_url}}/profiles/{{profile_public_username}}",
+                  "host": ["{{profile_service_url}}"],
+                  "path": ["profiles", "{{profile_public_username}}"]
+                },
+                "description": "Public – no auth required. Uses `profile_public_username`."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Avatar",
+          "item": [
+            {
+              "name": "Upload avatar (placeholder – 501)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status 501 Not Implemented', () => pm.response.to.have.status(501));"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "url": {
+                  "raw": "{{profile_service_url}}/profiles/me/avatar",
+                  "host": ["{{profile_service_url}}"],
+                  "path": ["profiles", "me", "avatar"]
+                },
+                "description": "GCS upload not implemented yet. Expect 501."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Links",
+          "item": [
+            {
+              "name": "Create link",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (pm.response.code === 201) {",
+                      "  const json = pm.response.json();",
+                      "  pm.environment.set('profile_link_id', json.id);",
+                      "  pm.test('Returns link with id', () => pm.expect(json.id).to.be.a('string'));",
+                      "  pm.test('URL stored correctly', () => pm.expect(json.url).to.equal('https://github.com/waypointbio'));",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"GitHub\",\n  \"url\": \"https://github.com/waypointbio\",\n  \"order\": 0\n}"
+                },
+                "url": {
+                  "raw": "{{profile_service_url}}/profiles/me/links",
+                  "host": ["{{profile_service_url}}"],
+                  "path": ["profiles", "me", "links"]
+                },
+                "description": "Creates a link. Stores the returned id in `profile_link_id`."
+              },
+              "response": []
+            },
+            {
+              "name": "Update link",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                      "pm.test('Title was updated', () => {",
+                      "  pm.expect(pm.response.json().title).to.equal('GitHub Profile');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"GitHub Profile\",\n  \"order\": 1\n}"
+                },
+                "url": {
+                  "raw": "{{profile_service_url}}/profiles/me/links/{{profile_link_id}}",
+                  "host": ["{{profile_service_url}}"],
+                  "path": ["profiles", "me", "links", "{{profile_link_id}}"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Delete link",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status 204 No Content', () => pm.response.to.have.status(204));",
+                      "pm.environment.unset('profile_link_id');"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "url": {
+                  "raw": "{{profile_service_url}}/profiles/me/links/{{profile_link_id}}",
+                  "host": ["{{profile_service_url}}"],
+                  "path": ["profiles", "me", "links", "{{profile_link_id}}"]
+                },
+                "description": "Deletes the link. Clears `profile_link_id` on success."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Error cases",
+          "item": [
+            {
+              "name": "Register – duplicate username (409)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status 409 Conflict', () => pm.response.to.have.status(409));"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "auth": { "type": "noauth" },
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"{{profile_username}}\",\n  \"password\": \"{{profile_password}}\"\n}"
+                },
+                "url": {
+                  "raw": "{{profile_service_url}}/auth/register",
+                  "host": ["{{profile_service_url}}"],
+                  "path": ["auth", "register"]
+                },
+                "description": "Run after Register succeeds – expects 409."
+              },
+              "response": []
+            },
+            {
+              "name": "Login – wrong password (401)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status 401 Unauthorized', () => pm.response.to.have.status(401));"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "auth": { "type": "noauth" },
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"{{profile_username}}\",\n  \"password\": \"wrongpassword\"\n}"
+                },
+                "url": {
+                  "raw": "{{profile_service_url}}/auth/login",
+                  "host": ["{{profile_service_url}}"],
+                  "path": ["auth", "login"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get profile – no token (401)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status 401 Unauthorized', () => pm.response.to.have.status(401));"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "auth": { "type": "noauth" },
+                "method": "GET",
+                "url": {
+                  "raw": "{{profile_service_url}}/profiles/me",
+                  "host": ["{{profile_service_url}}"],
+                  "path": ["profiles", "me"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get public profile – not found (404)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status 404 Not Found', () => pm.response.to.have.status(404));"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "auth": { "type": "noauth" },
+                "method": "GET",
+                "url": {
+                  "raw": "{{profile_service_url}}/profiles/this_user_does_not_exist_xyz",
+                  "host": ["{{profile_service_url}}"],
+                  "path": ["profiles", "this_user_does_not_exist_xyz"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create link – invalid URL (400)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status 400 Bad Request', () => pm.response.to.have.status(400));",
+                      "pm.test('Validation error on url field', () => {",
+                      "  pm.expect(pm.response.json().message).to.be.an('array');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"Bad link\",\n  \"url\": \"not-a-url\"\n}"
+                },
+                "url": {
+                  "raw": "{{profile_service_url}}/profiles/me/links",
+                  "host": ["{{profile_service_url}}"],
+                  "path": ["profiles", "me", "links"]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
