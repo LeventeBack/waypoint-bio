@@ -1,0 +1,79 @@
+@import "tailwindcss";
+
+:root {
+  --c-base: #0e1117;
+  --c-surface: #141923;
+  --c-raised: #1b2230;
+  --c-stroke: rgba(148, 163, 184, 0.13);
+  --c-stroke-strong: rgba(148, 163, 184, 0.26);
+  --c-ink: #eef2f7;
+  --c-muted: #8e9cb0;
+  --c-faint: #5c6a80;
+  --c-accent: oklch(0.6 0.16 268);
+  --c-accent-hover: color-mix(in oklab, var(--c-accent) 84%, white);
+  --c-accent-soft: color-mix(in srgb, var(--c-accent) 16%, transparent);
+  --c-on-accent: #ffffff;
+}
+
+@theme inline {
+  --color-base: var(--c-base);
+  --color-surface: var(--c-surface);
+  --color-raised: var(--c-raised);
+  --color-stroke: var(--c-stroke);
+  --color-stroke-strong: var(--c-stroke-strong);
+  --color-ink: var(--c-ink);
+  --color-muted: var(--c-muted);
+  --color-faint: var(--c-faint);
+  --color-accent: var(--c-accent);
+  --color-accent-hover: var(--c-accent-hover);
+  --color-accent-soft: var(--c-accent-soft);
+  --color-accent-on: var(--c-on-accent);
+
+  --font-sans: var(--font-jakarta), system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
+
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-pop: 0 12px 32px -8px rgba(0, 0, 0, 0.55);
+}
+
+html {
+  color-scheme: dark;
+}
+
+::selection {
+  background: var(--c-accent-soft);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.14) transparent;
+}
+*::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+*::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 99px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Public-profile link buttons */
+.wp-link {
+  transition:
+    transform 0.16s ease,
+    background 0.16s ease,
+    box-shadow 0.16s ease,
+    color 0.16s ease;
+}
+.wp-link:hover {
+  transform: translateY(-2px) scale(1.012);
+}
+.wp-link:active {
+  transform: scale(0.985);
+  transition-duration: 0.07s;
+}

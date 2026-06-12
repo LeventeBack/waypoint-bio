@@ -52,6 +52,27 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 20s
+
+  frontend:
+    build:
+      context: ./services/frontend
+      dockerfile: Dockerfile
+      target: dev
+    container_name: frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      PROFILE_SERVICE_URL: ${PROFILE_SERVICE_URL}
+      NODE_ENV: development
+    depends_on:
+      profile-service:
+        condition: service_healthy
+    volumes:
+      - ./services/frontend:/app # hot-reload: mounts source over image
+      - /app/node_modules # keep container node_modules intact
+      - /app/.next # keep build cache out of the host mount
 
 volumes:
   postgres-profile-data:
