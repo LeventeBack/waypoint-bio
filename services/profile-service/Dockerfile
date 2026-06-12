@@ -11,7 +11,7 @@ COPY . .
 RUN npx prisma generate
 
 EXPOSE 3010
-CMD ["npx", "nest", "start", "--watch"]
+CMD ["sh", "-c", "npx prisma migrate deploy && npx nest start --watch"]
 
 # ---- Build stage ----
 FROM dev AS build

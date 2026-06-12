@@ -25,6 +25,7 @@ services:
       target: dev
     container_name: profile-service
     restart: unless-stopped
+    command: sh -c "npx prisma migrate deploy && npx nest start --watch"
     ports:
       - "3010:3010"
     environment:
@@ -41,7 +42,13 @@ services:
       - /app/node_modules # keep container node_modules intact
       - /app/src/generated # keep generated Prisma client intact
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:3010/health || exit 1"]
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://localhost:3010/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
       interval: 10s
       timeout: 5s
       retries: 5
