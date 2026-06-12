@@ -19,7 +19,7 @@ export default async function PublicProfilePage({ params }: PublicProfilePagePro
   const profile = await getPublicProfileOr404(username);
 
   return (
-    <main className="min-h-screen w-full">
+    <main className="min-h-dvh w-full flex flex-col">
       <PublicProfile profile={formatPublicProfileUI(profile)} />
     </main>
   );

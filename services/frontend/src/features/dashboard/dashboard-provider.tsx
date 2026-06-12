@@ -19,7 +19,7 @@ import type { LinkFormValues } from "@/features/links/schemas";
 import type { Link } from "@/features/links/types";
 import { updateProfileAction } from "@/features/profile/actions";
 import type { Profile, ProfileWithLinks, UpdateProfileInput } from "@/features/profile/types";
-import type { ActionResult } from "@/lib/action-result";
+import { ok, type ActionResult } from "@/lib/action-result";
 import type { PageTheme } from "@/lib/theme/types";
 import { decodeTheme, encodeTheme } from "@/lib/theme/utils";
 
@@ -27,16 +27,28 @@ interface DashboardContextValue {
   profile: Profile;
   links: Link[];
   theme: PageTheme;
+  themeDirty: boolean;
   /** Local-only update for live preview while typing; pair with saveProfile on blur. */
   setProfileLocal: (patch: Partial<Pick<Profile, "bio" | "avatarUrl">>) => void;
+  /** Local-only theme update for live preview; persist explicitly with saveTheme. */
+  setThemeLocal: (theme: PageTheme) => void;
   /** Persists bio / avatarUrl / theme. Optimistic; re-syncs from the server on failure. */
   saveProfile: (input: UpdateProfileInput) => Promise<ActionResult<ProfileWithLinks>>;
-  saveTheme: (theme: PageTheme) => Promise<ActionResult<ProfileWithLinks>>;
+  /** Persists the locally staged theme. */
+  saveTheme: () => Promise<ActionResult<ProfileWithLinks>>;
+  /** Discards staged theme changes, reverting to the last saved theme. */
+  resetTheme: () => void;
   createLink: (input: LinkFormValues) => Promise<ActionResult<Link>>;
   updateLink: (id: string, input: LinkFormValues) => Promise<ActionResult<Link>>;
   deleteLink: (id: string) => Promise<ActionResult<void>>;
-  /** Applies a drag-reorder locally, then persists the changed positions. */
+  /** True when the local link order differs from the last persisted one. */
+  orderDirty: boolean;
+  /** Applies a drag-reorder locally; persist explicitly with saveOrder. */
   reorderLinks: (reordered: Link[]) => void;
+  /** Persists the locally staged link order. */
+  saveOrder: () => Promise<ActionResult<Link[]>>;
+  /** Discards staged reordering, reverting to the last saved order. */
+  resetOrder: () => void;
 }
 
 const DashboardContext = createContext<DashboardContextValue | null>(null);
@@ -59,12 +71,22 @@ export function DashboardProvider({
   const { links: initialLinks, ...rest } = initialProfile;
   const [profile, setProfile] = useState<Profile>(rest);
   const [links, setLinks] = useState<Link[]>(initialLinks);
+  const [savedTheme, setSavedTheme] = useState(() => encodeTheme(decodeTheme(rest.theme)));
+  const [savedOrder, setSavedOrder] = useState<string[]>(() => initialLinks.map((l) => l.id));
 
   const resync = useCallback(() => router.refresh(), [router]);
 
   const setProfileLocal = useCallback((patch: Partial<Pick<Profile, "bio" | "avatarUrl">>) => {
     setProfile((p) => ({ ...p, ...patch }));
   }, []);
+
+  const setThemeLocal = useCallback((theme: PageTheme) => {
+    setProfile((p) => ({ ...p, theme: encodeTheme(theme) }));
+  }, []);
+
+  const resetTheme = useCallback(() => {
+    setProfile((p) => ({ ...p, theme: savedTheme }));
+  }, [savedTheme]);
 
   const saveProfile = useCallback(
     async (input: UpdateProfileInput) => {
@@ -83,15 +105,20 @@ export function DashboardProvider({
     [profile, resync],
   );
 
-  const saveTheme = useCallback(
-    (theme: PageTheme) => saveProfile({ theme: encodeTheme(theme) }),
-    [saveProfile],
-  );
+  const saveTheme = useCallback(async () => {
+    const encoded = encodeTheme(decodeTheme(profile.theme));
+    const result = await saveProfile({ theme: encoded });
+    if (result.error === null) setSavedTheme(encoded);
+    return result;
+  }, [profile.theme, saveProfile]);
 
   const createLink = useCallback(
     async (input: LinkFormValues) => {
       const result = await createLinkAction({ ...input, order: links.length });
-      if (result.error === null) setLinks((ls) => [...ls, result.data]);
+      if (result.error === null) {
+        setLinks((ls) => [...ls, result.data]);
+        setSavedOrder((so) => [...so, result.data.id]);
+      }
       return result;
     },
     [links.length],
@@ -106,55 +133,77 @@ export function DashboardProvider({
   const deleteLink = useCallback(
     async (id: string) => {
       const previous = links;
+      const previousOrder = savedOrder;
       setLinks((ls) => ls.filter((l) => l.id !== id));
+      setSavedOrder((so) => so.filter((sid) => sid !== id));
       const result = await deleteLinkAction(id);
       if (result.error !== null) {
         setLinks(previous);
+        setSavedOrder(previousOrder);
         resync();
       }
       return result;
     },
-    [links, resync],
+    [links, savedOrder, resync],
   );
 
-  const reorderLinks = useCallback(
-    (reordered: Link[]) => {
-      const withOrder = reordered.map((link, index) => ({ ...link, order: index }));
-      const changed = withOrder.filter((link, index) => links[index]?.id !== link.id);
-      setLinks(withOrder);
-      if (changed.length === 0) return;
-      reorderLinksAction(changed.map(({ id, order }) => ({ id, order }))).then((result) => {
-        if (result.error !== null) resync();
-      });
-    },
-    [links, resync],
-  );
+  const reorderLinks = useCallback((reordered: Link[]) => {
+    setLinks(reordered.map((link, index) => ({ ...link, order: index })));
+  }, []);
 
-  const value = useMemo<DashboardContextValue>(
-    () => ({
+  const saveOrder = useCallback(async () => {
+    const changed = links.filter((link, index) => savedOrder[index] !== link.id);
+    if (changed.length === 0) return ok(links);
+    const result = await reorderLinksAction(changed.map(({ id, order }) => ({ id, order })));
+    if (result.error === null) setSavedOrder(links.map((l) => l.id));
+    return result;
+  }, [links, savedOrder]);
+
+  const resetOrder = useCallback(() => {
+    setLinks((ls) =>
+      [...ls]
+        .sort((a, b) => savedOrder.indexOf(a.id) - savedOrder.indexOf(b.id))
+        .map((link, index) => ({ ...link, order: index })),
+    );
+  }, [savedOrder]);
+
+  const value = useMemo<DashboardContextValue>(() => {
+    const theme = decodeTheme(profile.theme);
+    return {
       profile,
       links,
-      theme: decodeTheme(profile.theme),
+      theme,
+      themeDirty: encodeTheme(theme) !== savedTheme,
       setProfileLocal,
+      setThemeLocal,
       saveProfile,
       saveTheme,
+      resetTheme,
       createLink,
       updateLink,
       deleteLink,
+      orderDirty: links.some((link, index) => savedOrder[index] !== link.id),
       reorderLinks,
-    }),
-    [
-      profile,
-      links,
-      setProfileLocal,
-      saveProfile,
-      saveTheme,
-      createLink,
-      updateLink,
-      deleteLink,
-      reorderLinks,
-    ],
-  );
+      saveOrder,
+      resetOrder,
+    };
+  }, [
+    profile,
+    links,
+    savedTheme,
+    savedOrder,
+    setProfileLocal,
+    setThemeLocal,
+    saveProfile,
+    saveTheme,
+    resetTheme,
+    createLink,
+    updateLink,
+    deleteLink,
+    reorderLinks,
+    saveOrder,
+    resetOrder,
+  ]);
 
   return <DashboardContext.Provider value={value}>{children}</DashboardContext.Provider>;
 }

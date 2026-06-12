@@ -7,7 +7,7 @@ import { EditorSection } from "./editor-section";
 import { PresetCard } from "./preset-card";
 
 export function PresetSection() {
-  const { theme, saveTheme } = useDashboard();
+  const { theme, setThemeLocal } = useDashboard();
 
   return (
     <EditorSection label="Presets">
@@ -17,7 +17,7 @@ export function PresetSection() {
             key={preset.id}
             preset={preset}
             active={matchesPreset(theme, preset)}
-            onClick={() => saveTheme({ bgId: preset.bgId, button: { ...preset.button } })}
+            onClick={() => setThemeLocal({ bgId: preset.bgId, button: { ...preset.button } })}
           />
         ))}
       </div>

@@ -8,10 +8,10 @@ import { BUTTON_RADIUS_OPTIONS, BUTTON_VARIANT_OPTIONS } from "../constants";
 import { EditorSection } from "./editor-section";
 
 export function ButtonStyleSection() {
-  const { theme, saveTheme } = useDashboard();
+  const { theme, setThemeLocal } = useDashboard();
 
   const setButton = (patch: Partial<ButtonStyle>) =>
-    saveTheme({ ...theme, button: { ...theme.button, ...patch } });
+    setThemeLocal({ ...theme, button: { ...theme.button, ...patch } });
 
   return (
     <EditorSection label="Buttons">

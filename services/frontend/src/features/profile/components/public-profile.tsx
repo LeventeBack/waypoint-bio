@@ -13,7 +13,10 @@ export function PublicProfile({ profile, dense = false }: PublicProfileProps) {
   const colors = getTextColors(bg);
 
   return (
-    <div style={{ background: bg.css }} className="min-h-full w-full flex flex-col items-center">
+    <div
+      style={{ background: bg.css }}
+      className="min-h-full w-full flex-1 flex flex-col items-center"
+    >
       <div
         className={`w-full max-w-115 flex-1 flex flex-col items-center px-6 ${
           dense ? "pt-16 pb-8" : "pt-20 pb-10"

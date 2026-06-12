@@ -6,7 +6,7 @@ import { BackgroundCard } from "./background-card";
 import { EditorSection } from "./editor-section";
 
 export function BackgroundSection() {
-  const { theme, saveTheme } = useDashboard();
+  const { theme, setThemeLocal } = useDashboard();
 
   return (
     <EditorSection label="Background">
@@ -16,7 +16,7 @@ export function BackgroundSection() {
             key={bg.id}
             background={bg}
             active={theme.bgId === bg.id}
-            onClick={() => saveTheme({ ...theme, bgId: bg.id })}
+            onClick={() => setThemeLocal({ ...theme, bgId: bg.id })}
           />
         ))}
       </div>

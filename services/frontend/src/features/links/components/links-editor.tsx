@@ -19,6 +19,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icons";
 import { PageHeader } from "@/components/ui/page-header";
+import { SaveBar } from "@/components/ui/save-bar";
 import { useDashboard } from "@/features/dashboard/dashboard-provider";
 import { LinkModal } from "./link-modal";
 import { LinkRow } from "./link-row";
@@ -34,7 +35,7 @@ interface LinksEditorProps {
 }
 
 export function LinksEditor({ clicksByLinkId }: LinksEditorProps) {
-  const { links, deleteLink, reorderLinks } = useDashboard();
+  const { links, deleteLink, reorderLinks, orderDirty, saveOrder, resetOrder } = useDashboard();
   const [editing, setEditing] = useState<Editing>(null);
 
   const sensors = useSensors(
@@ -54,7 +55,7 @@ export function LinksEditor({ clicksByLinkId }: LinksEditorProps) {
     <div className="max-w-160 mx-auto w-full px-6 lg:px-10 py-9">
       <PageHeader
         title="Links"
-        description="Drag to reorder. Changes appear in the preview instantly."
+        description="Drag to reorder. The new order goes live once you save."
       >
         <Button onClick={() => setEditing({ mode: "new" })}>
           <Icon name="plus" size={15} /> Add link
@@ -84,6 +85,8 @@ export function LinksEditor({ clicksByLinkId }: LinksEditorProps) {
           </div>
         )}
       </div>
+
+      <SaveBar visible={orderDirty} onSave={saveOrder} onReset={resetOrder} />
 
       {editing && (
         <LinkModal
