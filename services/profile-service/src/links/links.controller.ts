@@ -23,17 +23,17 @@ export class LinksController {
 
   @Post()
   create(@CurrentUser() user: AuthUser, @Body() dto: CreateLinkDto) {
-    return this.linksService.create(user.id, dto);
+    return this.linksService.create(user, dto);
   }
 
   @Patch(":id")
   update(@CurrentUser() user: AuthUser, @Param("id") id: string, @Body() dto: UpdateLinkDto) {
-    return this.linksService.update(user.id, id, dto);
+    return this.linksService.update(user, id, dto);
   }
 
   @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(":id")
   async remove(@CurrentUser() user: AuthUser, @Param("id") id: string) {
-    await this.linksService.remove(user.id, id);
+    await this.linksService.remove(user, id);
   }
 }

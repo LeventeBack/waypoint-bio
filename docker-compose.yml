@@ -8,7 +8,7 @@ services:
       POSTGRES_USER: ${PROFILE_DB_USER}
       POSTGRES_PASSWORD: ${PROFILE_DB_PASSWORD}
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres-profile-data:/var/lib/postgresql/data
     healthcheck:
@@ -33,6 +33,7 @@ services:
       PROFILE_DB_URL: postgresql://${PROFILE_DB_USER}:${PROFILE_DB_PASSWORD}@postgres-profile:5432/${PROFILE_DB_NAME}
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN}
+      PROFILE_READER_SERVICE_URL: ${PROFILE_READER_SERVICE_URL}
       NODE_ENV: development
     depends_on:
       postgres-profile:
@@ -54,6 +55,44 @@ services:
       retries: 5
       start_period: 20s
 
+  redis-reader:
+    image: redis:7-alpine
+    container_name: redis-reader
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  profile-reader-service:
+    build:
+      context: ./services/profile-reader-service
+      dockerfile: Dockerfile
+    container_name: profile-reader-service
+    restart: unless-stopped
+    ports:
+      - "3020:3020"
+    environment:
+      PORT: 3020
+      REDIS_URL: ${REDIS_URL}
+      PROFILE_SERVICE_URL: ${PROFILE_SERVICE_URL}
+      ANALYTICS_SERVICE_URL: ${ANALYTICS_SERVICE_URL}
+      CACHE_TTL_SECONDS: ${CACHE_TTL_SECONDS}
+    depends_on:
+      redis-reader:
+        condition: service_healthy
+      profile-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3020/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
   frontend:
     build:
       context: ./services/frontend
@@ -62,12 +101,15 @@ services:
     container_name: frontend
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "3005:3005"
     environment:
       PROFILE_SERVICE_URL: ${PROFILE_SERVICE_URL}
+      PROFILE_READER_SERVICE_URL: ${PROFILE_READER_SERVICE_URL}
       NODE_ENV: development
     depends_on:
       profile-service:
+        condition: service_healthy
+      profile-reader-service:
         condition: service_healthy
     volumes:
       - ./services/frontend:/app # hot-reload: mounts source over image

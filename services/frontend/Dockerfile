@@ -6,7 +6,9 @@ RUN npm ci
 
 COPY . .
 
-EXPOSE 3000
+# next dev defaults to 3000; pin to 3005 to match EXPOSE and the compose mapping.
+ENV PORT=3005
+EXPOSE 3005
 CMD ["npm", "run", "dev"]
 
 # ---- Build stage ----
@@ -24,7 +26,7 @@ COPY --chown=node:node --from=build /app/.next/standalone ./
 COPY --chown=node:node --from=build /app/.next/static ./.next/static
 
 USER node
-EXPOSE 3000
-ENV PORT=3000
+EXPOSE 3005
+ENV PORT=3005
 ENV HOSTNAME=0.0.0.0
 CMD ["node", "server.js"]

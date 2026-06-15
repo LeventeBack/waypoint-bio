@@ -1,11 +1,15 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
+import { CacheInvalidationService } from "../cache/cache-invalidation.service";
 import { Profile } from "../generated/prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import { UpdateProfileDto } from "./dto/update-profile.dto";
 
 @Injectable()
 export class ProfilesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly cacheInvalidation: CacheInvalidationService,
+  ) {}
 
   async getById(id: string) {
     const profile = await this.prisma.profile.findUnique({
@@ -35,6 +39,7 @@ export class ProfilesService {
       data: dto,
       include: { links: { orderBy: { order: "asc" } } },
     });
+    this.cacheInvalidation.invalidate(profile.username);
     return this.sanitize(profile);
   }
 

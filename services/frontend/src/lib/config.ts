@@ -1,5 +1,6 @@
 export const CONFIG = {
   PROFILE_SERVICE_URL: process.env.PROFILE_SERVICE_URL,
+  PROFILE_READER_SERVICE_URL: process.env.PROFILE_READER_SERVICE_URL,
   NODE_ENV: process.env.NODE_ENV,
   PORT: process.env.PORT,
 } as const;

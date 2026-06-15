@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { getSessionToken } from "@/features/auth/session";
 import { profileClient } from "@/lib/api/profile-client";
+import { readerClient } from "@/lib/api/reader-client";
 import { bearerAuth, isNotFoundError } from "@/lib/api/utils";
 import { ROUTES } from "@/lib/routes";
 import type { ProfileWithLinks, UpdateProfileInput } from "./types";
@@ -13,8 +14,8 @@ export const getMe = async (token: string): Promise<ProfileWithLinks> => {
 };
 
 export const getPublicProfile = async (username: string): Promise<ProfileWithLinks> => {
-  const { data } = await profileClient.get<ProfileWithLinks>(
-    `/profiles/${encodeURIComponent(username)}`,
+  const { data } = await readerClient.get<ProfileWithLinks>(
+    `/${encodeURIComponent(username)}`,
   );
   return data;
 };
