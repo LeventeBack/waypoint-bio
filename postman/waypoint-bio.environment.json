@@ -10,6 +10,13 @@
       "enabled": true
     },
     {
+      "key": "reader_service_url",
+      "value": "http://localhost:3020",
+      "type": "default",
+      "enabled": true,
+      "description": "Base URL for profile-reader-service (public read cache)"
+    },
+    {
       "key": "profile_username",
       "value": "testuser",
       "type": "default",
