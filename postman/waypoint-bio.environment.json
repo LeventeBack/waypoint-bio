@@ -17,6 +17,13 @@
       "description": "Base URL for profile-reader-service (public read cache)"
     },
     {
+      "key": "analytics_service_url",
+      "value": "http://localhost:3030",
+      "type": "default",
+      "enabled": true,
+      "description": "Base URL for analytics-service (internal click-event stats)"
+    },
+    {
       "key": "profile_username",
       "value": "testuser",
       "type": "default",

@@ -1,0 +1,172 @@
+{
+  "info": {
+    "name": "analytics-service",
+    "description": "Internal click-event analytics. Two paths:\n\n- **Write** — `POST /events` is unauthenticated (network-isolated in the cluster) and is called by profile-reader-service on a profile view.\n- **Read** — `GET /stats/*` require a Bearer JWT (reuses `profile_token` from profile-service) and are always scoped to the token's own username.\n\n## Setup\n1. Import this collection and the `waypoint-bio.environment.json` environment.\n2. Select the environment and make sure `analytics_service_url` and `profile_token` are set (run profile-service **Login**/**Register** to populate the token).\n3. Run `Ingest Event` a few times, then the `Get my *` requests to see the aggregations.\n\n## Endpoints\n- `POST /events` — ingest one click/view event (no auth).\n- `GET /stats/me` — total clicks + per-link breakdown.\n- `GET /stats/me/timeseries` — clicks per day, last 30 days.\n- `GET /stats/me/geo` — clicks grouped by country.\n- `GET /health` — liveness/readiness.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      { "key": "token", "value": "{{profile_token}}", "type": "string" }
+    ]
+  },
+  "item": [
+    {
+      "name": "analytics-service",
+      "item": [
+        {
+          "name": "Ingest Event",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 202 Accepted', () => pm.response.to.have.status(202));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{profile_username}}\",\n  \"linkId\": \"{{profile_link_id}}\",\n  \"ip\": \"203.0.113.10\",\n  \"country\": \"US\"\n}"
+            },
+            "url": {
+              "raw": "{{analytics_service_url}}/events",
+              "host": ["{{analytics_service_url}}"],
+              "path": ["events"]
+            },
+            "description": "Persist one click/view event. Unauthenticated by design — only reachable from inside the cluster. `linkId`/`country`/`ip` are optional; `timestamp` defaults to now. Returns 202 Accepted."
+          },
+          "response": []
+        },
+        {
+          "name": "Get my stats",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('scoped to the authenticated user', () => {",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body).to.have.property('username');",
+                  "  pm.expect(body).to.have.property('totalClicks');",
+                  "  pm.expect(body.perLink).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{analytics_service_url}}/stats/me",
+              "host": ["{{analytics_service_url}}"],
+              "path": ["stats", "me"]
+            },
+            "description": "Total clicks plus a per-link breakdown for the user identified by the JWT."
+          },
+          "response": []
+        },
+        {
+          "name": "Get my timeseries",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('returns an array of {date, clicks}', () => {",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body).to.be.an('array');",
+                  "  if (body.length) {",
+                  "    pm.expect(body[0]).to.have.property('date');",
+                  "    pm.expect(body[0]).to.have.property('clicks');",
+                  "  }",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{analytics_service_url}}/stats/me/timeseries",
+              "host": ["{{analytics_service_url}}"],
+              "path": ["stats", "me", "timeseries"]
+            },
+            "description": "Clicks per calendar day (UTC) over the last 30 days."
+          },
+          "response": []
+        },
+        {
+          "name": "Get my geo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('returns an array of {country, clicks}', () => {",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body).to.be.an('array');",
+                  "  if (body.length) {",
+                  "    pm.expect(body[0]).to.have.property('country');",
+                  "    pm.expect(body[0]).to.have.property('clicks');",
+                  "  }",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{analytics_service_url}}/stats/me/geo",
+              "host": ["{{analytics_service_url}}"],
+              "path": ["stats", "me", "geo"]
+            },
+            "description": "Clicks grouped by country. Events without a country are reported as `unknown`."
+          },
+          "response": []
+        },
+        {
+          "name": "Health",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('db is up', () => {",
+                  "  pm.expect(pm.response.json()).to.deep.equal({ status: 'ok', db: 'up' });",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": {
+              "raw": "{{analytics_service_url}}/health",
+              "host": ["{{analytics_service_url}}"],
+              "path": ["health"]
+            },
+            "description": "Liveness/readiness. 200 {\"status\":\"ok\",\"db\":\"up\"} when Mongo is reachable, else 503."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
