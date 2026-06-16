@@ -14,9 +14,6 @@ export class ClickEvent {
   @Prop()
   ip?: string;
 
-  @Prop()
-  country?: string;
-
   @Prop({ required: true, default: () => new Date(), index: true })
   timestamp!: Date;
 }

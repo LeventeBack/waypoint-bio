@@ -21,8 +21,8 @@ export class StatsController {
     return this.statsService.getTimeseries(user.username);
   }
 
-  @Get("me/geo")
-  getMeGeo(@CurrentUser() user: AuthUser) {
-    return this.statsService.getGeo(user.username);
+  @Get("me/ips")
+  getMeIps(@CurrentUser() user: AuthUser) {
+    return this.statsService.getVisitsByIp(user.username);
   }
 }

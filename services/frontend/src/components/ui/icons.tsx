@@ -72,6 +72,12 @@ const ICON_PATHS = {
       <path d="M4 20l1.2-4.2L16 5l3 3L8.2 18.8 4 20z" />
     </g>
   ),
+  refresh: (
+    <g>
+      <path d="M20 12a8 8 0 1 1-2.34-5.66" />
+      <path d="M20 4v4h-4" />
+    </g>
+  ),
 } satisfies Record<string, JSX.Element>;
 
 export type IconName = keyof typeof ICON_PATHS;

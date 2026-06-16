@@ -21,8 +21,8 @@ export interface TimeseriesPoint {
   clicks: number;
 }
 
-export interface GeoStat {
-  country: string;
+export interface IpStat {
+  ip: string;
   clicks: number;
 }
 
@@ -47,12 +47,13 @@ export class StatsService {
     return { username, totalClicks: totals?.totalClicks ?? 0, perLink };
   }
 
-  // Clicks per calendar day (UTC) over the last 30 days.
+  // Link clicks per calendar day (UTC) over the last 30 days. Only events that
+  // carry a linkId are counted, matching the "Total clicks" definition.
   async getTimeseries(username: string): Promise<TimeseriesPoint[]> {
     const since = new Date(Date.now() - TIMESERIES_DAYS * 24 * 60 * 60 * 1000);
 
     return this.eventModel.aggregate<TimeseriesPoint>([
-      { $match: { username, timestamp: { $gte: since } } },
+      { $match: { username, linkId: { $ne: null }, timestamp: { $gte: since } } },
       {
         $group: {
           _id: { $dateToString: { format: "%Y-%m-%d", date: "$timestamp" } },
@@ -64,12 +65,12 @@ export class StatsService {
     ]);
   }
 
-  // Clicks grouped by country; events without a country fall under "unknown".
-  async getGeo(username: string): Promise<GeoStat[]> {
-    return this.eventModel.aggregate<GeoStat>([
-      { $match: { username } },
-      { $group: { _id: { $ifNull: ["$country", "unknown"] }, clicks: { $sum: 1 } } },
-      { $project: { _id: 0, country: "$_id", clicks: 1 } },
+  // Profile-view hits grouped by client IP
+  async getVisitsByIp(username: string): Promise<IpStat[]> {
+    return this.eventModel.aggregate<IpStat>([
+      { $match: { username, linkId: null } },
+      { $group: { _id: { $ifNull: ["$ip", "unknown"] }, clicks: { $sum: 1 } } },
+      { $project: { _id: 0, ip: "$_id", clicks: 1 } },
       { $sort: { clicks: -1 } },
     ]);
   }

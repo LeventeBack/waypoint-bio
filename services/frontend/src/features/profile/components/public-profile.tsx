@@ -1,4 +1,5 @@
 import { Avatar } from "@/components/ui/avatar";
+import { TrackedLink } from "@/features/analytics/components/tracked-link";
 import { getBackground, getTextColors, linkStyle } from "@/lib/theme/utils";
 import type { PublicProfileUI } from "../types";
 import { WaypointBadge } from "./waypoint-badge";
@@ -6,9 +7,10 @@ import { WaypointBadge } from "./waypoint-badge";
 interface PublicProfileProps {
   profile: PublicProfileUI;
   dense?: boolean;
+  track?: boolean;
 }
 
-export function PublicProfile({ profile, dense = false }: PublicProfileProps) {
+export function PublicProfile({ profile, dense = false, track = false }: PublicProfileProps) {
   const bg = getBackground(profile.theme.bgId);
   const colors = getTextColors(bg);
 
@@ -47,17 +49,18 @@ export function PublicProfile({ profile, dense = false }: PublicProfileProps) {
         )}
         <div className="w-full flex flex-col gap-3.5 mt-9">
           {profile.links.map((link) => (
-            <a
+            <TrackedLink
               key={link.id}
               href={link.url}
-              target="_blank"
-              rel="noopener noreferrer"
+              username={profile.username}
+              linkId={link.id}
+              track={track}
               className="wp-link h-14 w-full px-5 font-semibold text-[15px] flex items-center gap-3 text-left"
               style={linkStyle(bg, profile.theme.button)}
               title={link.url}
             >
               <span className="flex-1 truncate text-center">{link.title}</span>
-            </a>
+            </TrackedLink>
           ))}
         </div>
         <div className="mt-auto pt-14 pb-2">

@@ -29,6 +29,7 @@ func (h *ProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	if found {
 		slog.Info("cache hit", "username", username)
+		go h.Analytics.TrackView(username, clientIP(r))
 		w.Header().Set("X-Cache", "HIT")
 		writeRawJSON(w, http.StatusOK, cached)
 		return

@@ -118,7 +118,7 @@ services:
       target: dev
     container_name: analytics-service
     restart: unless-stopped
-    command: sh -c "npx nest start --watch"
+    command: sh -c "rm -f tsconfig.build.tsbuildinfo && npx nest start --watch"
     ports:
       - "3030:3030"
     environment:
@@ -157,11 +157,14 @@ services:
     environment:
       PROFILE_SERVICE_URL: ${PROFILE_SERVICE_URL}
       PROFILE_READER_SERVICE_URL: ${PROFILE_READER_SERVICE_URL}
+      ANALYTICS_SERVICE_URL: ${ANALYTICS_SERVICE_URL}
       NODE_ENV: development
     depends_on:
       profile-service:
         condition: service_healthy
       profile-reader-service:
+        condition: service_healthy
+      analytics-service:
         condition: service_healthy
     volumes:
       - ./services/frontend:/app # hot-reload: mounts source over image

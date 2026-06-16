@@ -14,10 +14,6 @@ export class CreateEventDto {
   ip?: string;
 
   @IsOptional()
-  @IsString()
-  country?: string;
-
-  @IsOptional()
   @IsDateString()
   timestamp?: string;
 }

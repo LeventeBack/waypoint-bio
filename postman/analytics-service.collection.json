@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "analytics-service",
-    "description": "Internal click-event analytics. Two paths:\n\n- **Write** — `POST /events` is unauthenticated (network-isolated in the cluster) and is called by profile-reader-service on a profile view.\n- **Read** — `GET /stats/*` require a Bearer JWT (reuses `profile_token` from profile-service) and are always scoped to the token's own username.\n\n## Setup\n1. Import this collection and the `waypoint-bio.environment.json` environment.\n2. Select the environment and make sure `analytics_service_url` and `profile_token` are set (run profile-service **Login**/**Register** to populate the token).\n3. Run `Ingest Event` a few times, then the `Get my *` requests to see the aggregations.\n\n## Endpoints\n- `POST /events` — ingest one click/view event (no auth).\n- `GET /stats/me` — total clicks + per-link breakdown.\n- `GET /stats/me/timeseries` — clicks per day, last 30 days.\n- `GET /stats/me/geo` — clicks grouped by country.\n- `GET /health` — liveness/readiness.",
+    "description": "Internal click-event analytics. Two paths:\n\n- **Write** — `POST /events` is unauthenticated (network-isolated in the cluster) and is called by profile-reader-service on a profile view.\n- **Read** — `GET /stats/*` require a Bearer JWT (reuses `profile_token` from profile-service) and are always scoped to the token's own username.\n\n## Setup\n1. Import this collection and the `waypoint-bio.environment.json` environment.\n2. Select the environment and make sure `analytics_service_url` and `profile_token` are set (run profile-service **Login**/**Register** to populate the token).\n3. Run `Ingest Event` a few times, then the `Get my *` requests to see the aggregations.\n\n## Endpoints\n- `POST /events` — ingest one click/view event (no auth).\n- `GET /stats/me` — total clicks + per-link breakdown.\n- `GET /stats/me/timeseries` — link clicks per day, last 30 days.\n- `GET /stats/me/ips` — profile visits grouped by client IP.\n- `GET /health` — liveness/readiness.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
@@ -33,14 +33,14 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"username\": \"{{profile_username}}\",\n  \"linkId\": \"{{profile_link_id}}\",\n  \"ip\": \"203.0.113.10\",\n  \"country\": \"US\"\n}"
+              "raw": "{\n  \"username\": \"{{profile_username}}\",\n  \"linkId\": \"{{profile_link_id}}\",\n  \"ip\": \"203.0.113.10\"\n}"
             },
             "url": {
               "raw": "{{analytics_service_url}}/events",
               "host": ["{{analytics_service_url}}"],
               "path": ["events"]
             },
-            "description": "Persist one click/view event. Unauthenticated by design — only reachable from inside the cluster. `linkId`/`country`/`ip` are optional; `timestamp` defaults to now. Returns 202 Accepted."
+            "description": "Persist one click/view event. Unauthenticated by design — only reachable from inside the cluster. `linkId`/`ip` are optional; `timestamp` defaults to now. Returns 202 Accepted."
           },
           "response": []
         },
@@ -107,7 +107,7 @@
           "response": []
         },
         {
-          "name": "Get my geo",
+          "name": "Get my IPs",
           "event": [
             {
               "listen": "test",
@@ -115,11 +115,11 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('status is 200', () => pm.response.to.have.status(200));",
-                  "pm.test('returns an array of {country, clicks}', () => {",
+                  "pm.test('returns an array of {ip, clicks}', () => {",
                   "  const body = pm.response.json();",
                   "  pm.expect(body).to.be.an('array');",
                   "  if (body.length) {",
-                  "    pm.expect(body[0]).to.have.property('country');",
+                  "    pm.expect(body[0]).to.have.property('ip');",
                   "    pm.expect(body[0]).to.have.property('clicks');",
                   "  }",
                   "});"
@@ -130,11 +130,11 @@
           "request": {
             "method": "GET",
             "url": {
-              "raw": "{{analytics_service_url}}/stats/me/geo",
+              "raw": "{{analytics_service_url}}/stats/me/ips",
               "host": ["{{analytics_service_url}}"],
-              "path": ["stats", "me", "geo"]
+              "path": ["stats", "me", "ips"]
             },
-            "description": "Clicks grouped by country. Events without a country are reported as `unknown`."
+            "description": "Profile visits (page-view events, no linkId) grouped by client IP. Events without an IP are reported as `unknown`."
           },
           "response": []
         },

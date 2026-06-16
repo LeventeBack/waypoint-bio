@@ -4,6 +4,10 @@ import { Model } from "mongoose";
 import { CreateEventDto } from "./dto/create-event.dto";
 import { ClickEvent } from "./schemas/click-event.schema";
 
+function normalizeIp(ip?: string): string | undefined {
+  return ip?.replace(/^::ffff:/i, "");
+}
+
 @Injectable()
 export class EventsService {
   constructor(@InjectModel(ClickEvent.name) private readonly eventModel: Model<ClickEvent>) {}
@@ -12,8 +16,7 @@ export class EventsService {
     await this.eventModel.create({
       username: dto.username,
       linkId: dto.linkId,
-      ip: dto.ip,
-      country: dto.country,
+      ip: normalizeIp(dto.ip),
       timestamp: dto.timestamp ? new Date(dto.timestamp) : new Date(),
     });
   }

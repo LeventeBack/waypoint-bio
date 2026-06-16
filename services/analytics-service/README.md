@@ -15,8 +15,8 @@ frontend (Next.js BFF) ──GET /stats/* (Bearer JWT)──▶ analytics-servic
 | ------ | ---------------------- | ------ | --------------------------------------- |
 | POST   | `/events`              | —      | Ingest one event (network-isolated)     |
 | GET    | `/stats/me`            | Bearer | Total clicks + per-link breakdown       |
-| GET    | `/stats/me/timeseries` | Bearer | Clicks per day for the last 30 days     |
-| GET    | `/stats/me/geo`        | Bearer | Clicks grouped by country               |
+| GET    | `/stats/me/timeseries` | Bearer | Link clicks per day for the last 30 days |
+| GET    | `/stats/me/ips`        | Bearer | Profile visits grouped by client IP     |
 | GET    | `/metrics`             | —      | Prometheus exposition                   |
 | GET    | `/health`              | —      | Liveness/readiness (Mongo connectivity) |
 

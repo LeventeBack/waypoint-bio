@@ -1,10 +1,19 @@
+import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
+import { cache } from "react";
 import { getSessionToken } from "@/features/auth/session";
 import { profileClient } from "@/lib/api/profile-client";
 import { readerClient } from "@/lib/api/reader-client";
 import { bearerAuth, isNotFoundError } from "@/lib/api/utils";
 import { ROUTES } from "@/lib/routes";
 import type { ProfileWithLinks, UpdateProfileInput } from "./types";
+
+async function visitorForwardHeaders(): Promise<Record<string, string> | undefined> {
+  const incoming = await headers();
+  const ip =
+    incoming.get("x-forwarded-for")?.split(",")[0]?.trim() ?? incoming.get("x-real-ip")?.trim();
+  return ip ? { "X-Forwarded-For": ip } : undefined;
+}
 
 export const getMe = async (token: string): Promise<ProfileWithLinks> => {
   const { data } = await profileClient.get<ProfileWithLinks>("/profiles/me", {
@@ -14,9 +23,9 @@ export const getMe = async (token: string): Promise<ProfileWithLinks> => {
 };
 
 export const getPublicProfile = async (username: string): Promise<ProfileWithLinks> => {
-  const { data } = await readerClient.get<ProfileWithLinks>(
-    `/${encodeURIComponent(username)}`,
-  );
+  const { data } = await readerClient.get<ProfileWithLinks>(`/${encodeURIComponent(username)}`, {
+    headers: await visitorForwardHeaders(),
+  });
   return data;
 };
 
@@ -41,11 +50,11 @@ export async function getCurrentProfile(): Promise<ProfileWithLinks> {
   }
 }
 
-export async function getPublicProfileOr404(username: string): Promise<ProfileWithLinks> {
+export const getPublicProfileOr404 = cache(async (username: string): Promise<ProfileWithLinks> => {
   try {
     return await getPublicProfile(username);
   } catch (err) {
     if (isNotFoundError(err)) notFound();
     throw err;
   }
-}
+});

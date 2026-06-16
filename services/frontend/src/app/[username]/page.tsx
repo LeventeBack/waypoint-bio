@@ -20,7 +20,7 @@ export default async function PublicProfilePage({ params }: PublicProfilePagePro
 
   return (
     <main className="min-h-dvh w-full flex flex-col">
-      <PublicProfile profile={formatPublicProfileUI(profile)} />
+      <PublicProfile profile={formatPublicProfileUI(profile)} track />
     </main>
   );
 }

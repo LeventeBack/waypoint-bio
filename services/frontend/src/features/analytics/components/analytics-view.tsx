@@ -2,6 +2,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import type { ProfileStatsUI } from "../types";
 import { BarListCard } from "./bar-list-card";
 import { ClicksChart } from "./clicks-chart";
+import { RefreshButton } from "./refresh-button";
 import { StatCard } from "./stat-card";
 
 interface AnalyticsViewProps {
@@ -12,14 +13,17 @@ export function AnalyticsView({ stats }: AnalyticsViewProps) {
   return (
     <div className="max-w-200 mx-auto w-full px-6 lg:px-10 py-9">
       <PageHeader title="Analytics" description="How your page performed.">
-        <span className="font-mono text-[12px] text-muted bg-surface border border-stroke rounded-full h-8 px-3.5 inline-flex items-center">
-          {stats.rangeLabel}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="font-mono text-[12px] text-muted bg-surface border border-stroke rounded-full h-8 px-3.5 inline-flex items-center">
+            {stats.rangeLabel}
+          </span>
+          <RefreshButton />
+        </div>
       </PageHeader>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 mt-7">
-        <StatCard label="Profile views" value={stats.views} delta={stats.viewsDelta} />
-        <StatCard label="Total clicks" value={stats.totalClicks} delta={stats.clicksDelta} />
+        <StatCard label="Profile views" value={stats.views} />
+        <StatCard label="Total clicks" value={stats.totalClicks} />
         <StatCard label="Click rate" value={stats.clickRate} />
       </div>
 
@@ -35,7 +39,7 @@ export function AnalyticsView({ stats }: AnalyticsViewProps) {
           accent
           emptyMessage="Add links to see their performance here."
         />
-        <BarListCard title="Clicks by country" rows={stats.countries} />
+        <BarListCard title="Visits by IP" rows={stats.ips} />
       </div>
     </div>
   );
