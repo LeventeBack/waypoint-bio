@@ -17,6 +17,14 @@ CMD ["sh", "-c", "npx prisma migrate deploy && npx nest start --watch"]
 FROM dev AS build
 RUN npm run build && npm prune --omit=dev
 
+# ---- Migration stage ----
+# The runtime stage prunes devDependencies, which removes the `prisma` CLI, and
+# never copies the prisma/ folder. So migrations cannot run from the prod image.
+# This stage reuses `dev` (full deps + schema + migrations + generated client)
+# and is published as a separate image that a Kubernetes Job runs before rollout.
+FROM dev AS migrator
+CMD ["npx", "prisma", "migrate", "deploy"]
+
 # ---- Runtime stage (production image) ----
 FROM node:22-alpine AS runtime
 WORKDIR /app
@@ -28,5 +36,5 @@ COPY --chown=node:node --from=build /app/src/generated ./src/generated
 COPY --chown=node:node --from=build /app/package.json ./
 
 USER node
-EXPOSE 3001
+EXPOSE 3010
 CMD ["node", "dist/main.js"]
