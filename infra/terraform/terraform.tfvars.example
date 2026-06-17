@@ -1,0 +1,12 @@
+# Copy to terraform.tfvars and fill in. terraform.tfvars is gitignored - never commit it.
+
+project_id = "YOUR_GCP_PROJECT_ID"
+region     = "europe-west1"   # change if you prefer another region
+zone       = "europe-west1-b" # must be within `region`
+
+# SSH public key added to both VMs (the matching private key lets you `ssh` in).
+ssh_user            = "waypoint"
+ssh_public_key_path = "~/.ssh/id_ed25519.pub"
+
+# Lock SSH (22) to your IP
+admin_source_ranges = ["YOUR_PUBLIC_IP/32"]

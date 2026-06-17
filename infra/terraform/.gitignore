@@ -1,0 +1,9 @@
+# Local state, secrets, and provider plugins - never commit these.
+*.tfstate
+*.tfstate.*
+.terraform/
+# .terraform.lock.hcl is committed (reproducible provider versions)
+terraform.tfvars
+*.auto.tfvars
+crash.log
+*.tfplan
