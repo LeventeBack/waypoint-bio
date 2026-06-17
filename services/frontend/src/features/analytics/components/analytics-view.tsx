@@ -12,7 +12,7 @@ interface AnalyticsViewProps {
 export function AnalyticsView({ stats }: AnalyticsViewProps) {
   return (
     <div className="max-w-200 mx-auto w-full px-6 lg:px-10 py-9">
-      <PageHeader title="Analytics" description="How your page performed.">
+      <PageHeader title="Analytics" description="How your page performed in the past period.">
         <div className="flex items-center gap-2">
           <span className="font-mono text-[12px] text-muted bg-surface border border-stroke rounded-full h-8 px-3.5 inline-flex items-center">
             {stats.rangeLabel}
