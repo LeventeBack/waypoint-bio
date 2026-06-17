@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: waypoint-shared-config
+  namespace: waypoint
+data:
+  PROFILE_SERVICE_URL: "http://profile-service:3010"
+  PROFILE_READER_SERVICE_URL: "http://profile-reader-service:3020"
+  ANALYTICS_SERVICE_URL: "http://analytics-service:3030"

@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: profile-reader-service
+  namespace: waypoint
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: profile-reader-service
+  template:
+    metadata:
+      labels:
+        app: profile-reader-service
+    spec:
+      containers:
+        - name: profile-reader-service
+          image: europe-west1-docker.pkg.dev/waypoint-bio-project/waypoint/profile-reader-service:latest
+          ports:
+            - containerPort: 3020
+          env:
+            - name: PORT
+              value: "3020"
+            - name: REDIS_URL
+              value: "redis://redis-reader:6379"
+            - name: CACHE_TTL_SECONDS
+              value: "300"
+          envFrom:
+            - configMapRef: { name: waypoint-shared-config }
+          readinessProbe:
+            httpGet: { path: /health, port: 3020 }
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: { path: /health, port: 3020 }
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          resources:
+            # requests.cpu is required for the HPA's CPU-percentage target to work.
+            requests: { cpu: 100m, memory: 64Mi }
+            limits: { cpu: 300m, memory: 128Mi }
