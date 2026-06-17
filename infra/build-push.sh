@@ -21,10 +21,14 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
 build() { # <image-name> <context> <target?>
   local name="$1" ctx="$2" target="${3:-}"
+  # Tag the immutable SHA (or given tag) and, unless that already is latest,
+  # move :latest too so the committed manifests' :latest stays current.
+  local tags=(-t "$REG/$name:$TAG")
+  [ "$TAG" != "latest" ] && tags+=(-t "$REG/$name:latest")
   echo ">>> $REG/$name:$TAG"
   docker buildx build --platform "$PLATFORM" \
     ${target:+--target "$target"} \
-    -t "$REG/$name:$TAG" "$ROOT/$ctx" --push
+    "${tags[@]}" "$ROOT/$ctx" --push
 }
 
 build profile-service          services/profile-service        runtime
