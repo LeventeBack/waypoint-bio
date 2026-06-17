@@ -26,7 +26,7 @@ export function PublicProfile({ profile, dense = false, track = false }: PublicP
       >
         <Avatar
           src={profile.avatarUrl}
-          name={profile.username}
+          name={profile.displayName}
           size={dense ? 86 : 96}
           ringColor={colors.avatarRing}
         />
@@ -34,7 +34,7 @@ export function PublicProfile({ profile, dense = false, track = false }: PublicP
           style={{ color: colors.heading }}
           className="mt-5 text-[22px] font-extrabold tracking-tight leading-none"
         >
-          {profile.username}
+          {profile.displayName}
         </h1>
         <div style={{ color: colors.subtext }} className="font-mono text-[13px] mt-2">
           {profile.handle}
@@ -59,7 +59,12 @@ export function PublicProfile({ profile, dense = false, track = false }: PublicP
               style={linkStyle(bg, profile.theme.button)}
               title={link.url}
             >
+              {link.iconUrl && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={link.iconUrl} alt="" className="w-6 h-6 rounded object-cover shrink-0" />
+              )}
               <span className="flex-1 truncate text-center">{link.title}</span>
+              {link.iconUrl && <span className="w-6 shrink-0" aria-hidden />}
             </TrackedLink>
           ))}
         </div>

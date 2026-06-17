@@ -1,12 +1,18 @@
 import { z } from "zod";
 import { URL_PATTERN } from "@/lib/validation";
-import { BIO_MAX_LENGTH, THEME_MAX_LENGTH } from "./constants";
+import { BIO_MAX_LENGTH, DISPLAY_NAME_MAX_LENGTH, THEME_MAX_LENGTH } from "./constants";
 
 export const imageUrlSchema = z
   .string()
   .regex(URL_PATTERN, "Enter a full image URL, including https://");
 
 export const updateProfileSchema = z.object({
+  displayName: z
+    .string()
+    .trim()
+    .max(DISPLAY_NAME_MAX_LENGTH, `Keep your name under ${DISPLAY_NAME_MAX_LENGTH} characters.`)
+    .nullable()
+    .optional(),
   bio: z
     .string()
     .max(BIO_MAX_LENGTH, `Keep your bio under ${BIO_MAX_LENGTH} characters.`)

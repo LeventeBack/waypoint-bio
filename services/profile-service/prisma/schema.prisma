@@ -11,6 +11,7 @@ datasource db {
 model Profile {
   id           String   @id @default(uuid())
   username     String   @unique
+  displayName  String?
   passwordHash String
   bio          String?
   theme        String   @default("default")
@@ -24,6 +25,7 @@ model Link {
   id        String  @id @default(uuid())
   title     String
   url       String
+  iconUrl   String?
   order     Int     @default(0)
   profileId String
   profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)

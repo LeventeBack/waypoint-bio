@@ -39,6 +39,15 @@ export async function updateProfile(
   return data;
 }
 
+export async function uploadAvatar(token: string, file: File): Promise<ProfileWithLinks> {
+  const form = new FormData();
+  form.append("file", file);
+  const { data } = await profileClient.post<ProfileWithLinks>("/profiles/me/avatar", form, {
+    headers: bearerAuth(token),
+  });
+  return data;
+}
+
 export async function getCurrentProfile(): Promise<ProfileWithLinks> {
   const token = await getSessionToken();
   if (!token) redirect(ROUTES.login);

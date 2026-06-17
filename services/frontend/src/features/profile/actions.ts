@@ -15,3 +15,12 @@ export async function updateProfileAction(
 
   return withToken((token) => profileApi.updateProfile(token, parsed.data));
 }
+
+export async function uploadAvatarAction(
+  formData: FormData,
+): Promise<ActionResult<ProfileWithLinks>> {
+  const file = formData.get("file");
+  if (!(file instanceof File) || file.size === 0) return fail("Choose an image to upload.");
+
+  return withToken((token) => profileApi.uploadAvatar(token, file));
+}

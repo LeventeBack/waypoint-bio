@@ -28,6 +28,16 @@ export async function deleteLinkAction(id: string): Promise<ActionResult<void>> 
   return withToken((token) => linksApi.deleteLink(token, id));
 }
 
+export async function uploadLinkIconAction(
+  id: string,
+  formData: FormData,
+): Promise<ActionResult<Link>> {
+  const file = formData.get("file");
+  if (!(file instanceof File) || file.size === 0) return fail("Choose an image to upload.");
+
+  return withToken((token) => linksApi.uploadLinkIcon(token, id, file));
+}
+
 export async function reorderLinksAction(
   updates: LinkOrderUpdate[],
 ): Promise<ActionResult<Link[]>> {

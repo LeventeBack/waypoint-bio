@@ -5,13 +5,14 @@ import type { ProfileWithLinks, PublicProfileUI } from "./types";
 export function formatPublicProfileUI(profile: ProfileWithLinks): PublicProfileUI {
   return {
     username: profile.username,
+    displayName: profile.displayName?.trim() || profile.username,
     handle: `@${profile.username}`,
     bio: profile.bio?.trim() ? profile.bio : null,
     avatarUrl: profile.avatarUrl,
     theme: decodeTheme(profile.theme),
     links: profile.links
       .filter((link) => link.title.trim())
-      .map(({ id, title, url }) => ({ id, title, url })),
+      .map(({ id, title, url, iconUrl }) => ({ id, title, url, iconUrl })),
   };
 }
 

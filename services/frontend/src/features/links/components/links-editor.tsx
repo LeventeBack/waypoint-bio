@@ -63,7 +63,12 @@ export function LinksEditor({ clicksByLinkId }: LinksEditorProps) {
       </PageHeader>
 
       <div className="flex flex-col gap-2.5 mt-7">
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+        <DndContext
+          id="links-dnd"
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={onDragEnd}
+        >
           <SortableContext items={links.map((l) => l.id)} strategy={verticalListSortingStrategy}>
             {links.map((link) => (
               <LinkRow

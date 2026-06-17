@@ -47,6 +47,10 @@ export function LinkRow({ link, onEdit, onDelete }: LinkRowProps) {
         className="flex-1 min-w-0 flex items-center gap-3 text-left"
         title="Edit link"
       >
+        {link.iconUrl && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={link.iconUrl} alt="" className="w-7 h-7 rounded-md object-cover shrink-0" />
+        )}
         <span className="flex-1 min-w-0 flex flex-col gap-0.5">
           <span className="text-[14.5px] font-semibold text-ink truncate">{link.title}</span>
           <span className="font-mono text-[12px] text-muted truncate">{link.url}</span>

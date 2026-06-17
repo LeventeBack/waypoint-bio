@@ -2,6 +2,7 @@ export interface Link {
   id: string;
   title: string;
   url: string;
+  iconUrl: string | null;
   order: number;
   profileId: string;
 }
@@ -27,5 +28,6 @@ export interface LinkUI {
   id: string;
   title: string;
   url: string;
+  iconUrl: string | null;
   clicksLabel: string;
 }

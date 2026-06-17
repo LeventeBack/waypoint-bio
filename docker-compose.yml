@@ -34,6 +34,8 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN}
       PROFILE_READER_SERVICE_URL: ${PROFILE_READER_SERVICE_URL}
+      GCS_BUCKET: waypoint-bio-images
+      GCS_KEY_FILE: /etc/gcs/key.json
       NODE_ENV: development
     depends_on:
       postgres-profile:
@@ -42,6 +44,7 @@ services:
       - ./services/profile-service:/app # hot-reload: mounts source over image
       - /app/node_modules # keep container node_modules intact
       - /app/src/generated # keep generated Prisma client intact
+      - ./secrets/waypoint-storage-key.json:/etc/gcs/key.json:ro # GCS uploader key
     healthcheck:
       test:
         [

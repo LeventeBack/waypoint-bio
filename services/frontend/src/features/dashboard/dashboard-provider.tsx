@@ -14,10 +14,11 @@ import {
   deleteLinkAction,
   reorderLinksAction,
   updateLinkAction,
+  uploadLinkIconAction,
 } from "@/features/links/actions";
 import type { LinkFormValues } from "@/features/links/schemas";
 import type { Link } from "@/features/links/types";
-import { updateProfileAction } from "@/features/profile/actions";
+import { updateProfileAction, uploadAvatarAction } from "@/features/profile/actions";
 import type { Profile, ProfileWithLinks, UpdateProfileInput } from "@/features/profile/types";
 import { ok, type ActionResult } from "@/lib/action-result";
 import type { PageTheme } from "@/lib/theme/types";
@@ -29,11 +30,15 @@ interface DashboardContextValue {
   theme: PageTheme;
   themeDirty: boolean;
   /** Local-only update for live preview while typing; pair with saveProfile on blur. */
-  setProfileLocal: (patch: Partial<Pick<Profile, "bio" | "avatarUrl">>) => void;
+  setProfileLocal: (patch: Partial<Pick<Profile, "bio" | "avatarUrl" | "displayName">>) => void;
   /** Local-only theme update for live preview; persist explicitly with saveTheme. */
   setThemeLocal: (theme: PageTheme) => void;
   /** Persists bio / avatarUrl / theme. Optimistic; re-syncs from the server on failure. */
   saveProfile: (input: UpdateProfileInput) => Promise<ActionResult<ProfileWithLinks>>;
+  /** Uploads a new avatar image and applies the returned profile. */
+  uploadAvatar: (file: File) => Promise<ActionResult<ProfileWithLinks>>;
+  /** Uploads an icon image for a link and applies the returned link. */
+  uploadLinkIcon: (id: string, file: File) => Promise<ActionResult<Link>>;
   /** Persists the locally staged theme. */
   saveTheme: () => Promise<ActionResult<ProfileWithLinks>>;
   /** Discards staged theme changes, reverting to the last saved theme. */
@@ -76,9 +81,12 @@ export function DashboardProvider({
 
   const resync = useCallback(() => router.refresh(), [router]);
 
-  const setProfileLocal = useCallback((patch: Partial<Pick<Profile, "bio" | "avatarUrl">>) => {
-    setProfile((p) => ({ ...p, ...patch }));
-  }, []);
+  const setProfileLocal = useCallback(
+    (patch: Partial<Pick<Profile, "bio" | "avatarUrl" | "displayName">>) => {
+      setProfile((p) => ({ ...p, ...patch }));
+    },
+    [],
+  );
 
   const setThemeLocal = useCallback((theme: PageTheme) => {
     setProfile((p) => ({ ...p, theme: encodeTheme(theme) }));
@@ -112,6 +120,17 @@ export function DashboardProvider({
     return result;
   }, [profile.theme, saveProfile]);
 
+  const uploadAvatar = useCallback(async (file: File) => {
+    const form = new FormData();
+    form.append("file", file);
+    const result = await uploadAvatarAction(form);
+    if (result.error === null) {
+      const { links: _, ...updated } = result.data;
+      setProfile(updated);
+    }
+    return result;
+  }, []);
+
   const createLink = useCallback(
     async (input: LinkFormValues) => {
       const result = await createLinkAction({ ...input, order: links.length });
@@ -126,6 +145,14 @@ export function DashboardProvider({
 
   const updateLink = useCallback(async (id: string, input: LinkFormValues) => {
     const result = await updateLinkAction(id, input);
+    if (result.error === null) setLinks((ls) => ls.map((l) => (l.id === id ? result.data : l)));
+    return result;
+  }, []);
+
+  const uploadLinkIcon = useCallback(async (id: string, file: File) => {
+    const form = new FormData();
+    form.append("file", file);
+    const result = await uploadLinkIconAction(id, form);
     if (result.error === null) setLinks((ls) => ls.map((l) => (l.id === id ? result.data : l)));
     return result;
   }, []);
@@ -179,6 +206,8 @@ export function DashboardProvider({
       saveProfile,
       saveTheme,
       resetTheme,
+      uploadAvatar,
+      uploadLinkIcon,
       createLink,
       updateLink,
       deleteLink,
@@ -197,6 +226,8 @@ export function DashboardProvider({
     saveProfile,
     saveTheme,
     resetTheme,
+    uploadAvatar,
+    uploadLinkIcon,
     createLink,
     updateLink,
     deleteLink,

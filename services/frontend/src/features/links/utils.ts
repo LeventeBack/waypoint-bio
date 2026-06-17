@@ -7,6 +7,7 @@ export function formatLinkUI(link: Link, clicks: number): LinkUI {
     id: link.id,
     title: link.title.trim() || UNTITLED_LINK_LABEL,
     url: link.url,
+    iconUrl: link.iconUrl,
     clicksLabel: `${formatNumber(clicks)} clicks`,
   };
 }

@@ -27,7 +27,8 @@ export class AuthService {
 
     const passwordHash = await bcrypt.hash(dto.password, SALT_ROUNDS);
     const profile = await this.prisma.profile.create({
-      data: { username: dto.username, passwordHash },
+      // displayName defaults to the username; users can change it later
+      data: { username: dto.username, displayName: dto.username, passwordHash },
     });
 
     return this.buildAuthResponse(profile);
