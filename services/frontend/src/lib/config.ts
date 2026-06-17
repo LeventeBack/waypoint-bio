@@ -7,3 +7,9 @@ export const CONFIG = {
 } as const;
 
 export const isProduction = CONFIG.NODE_ENV === "production";
+
+// The session cookie may only be marked `Secure` when served over HTTPS
+export const sessionCookieSecure =
+  process.env.SESSION_COOKIE_SECURE != null
+    ? process.env.SESSION_COOKIE_SECURE === "true"
+    : isProduction;

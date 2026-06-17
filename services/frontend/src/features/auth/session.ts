@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import { isProduction } from "@/lib/config";
+import { sessionCookieSecure } from "@/lib/config";
 import { SESSION_COOKIE, SESSION_FALLBACK_MAX_AGE_SECONDS } from "./constants";
 
 function maxAgeFromToken(token: string): number {
@@ -19,7 +19,7 @@ export async function createSession(token: string): Promise<void> {
   const store = await cookies();
   store.set(SESSION_COOKIE, token, {
     httpOnly: true,
-    secure: isProduction,
+    secure: sessionCookieSecure,
     sameSite: "lax",
     path: "/",
     maxAge: maxAgeFromToken(token),
