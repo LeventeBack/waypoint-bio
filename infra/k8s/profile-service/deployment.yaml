@@ -32,6 +32,10 @@ spec:
               value: "3010"
             - name: JWT_EXPIRES_IN
               value: "7d"
+            - name: GCS_BUCKET
+              value: "waypoint-bio-images"
+            - name: GCS_KEY_FILE
+              value: "/etc/gcs/key.json"
           envFrom:
             - configMapRef: { name: waypoint-shared-config }
             - secretRef: { name: waypoint-secrets }
@@ -46,3 +50,11 @@ spec:
           resources:
             requests: { cpu: 100m, memory: 192Mi }
             limits: { cpu: 500m, memory: 384Mi }
+          volumeMounts:
+            - name: gcs-key
+              mountPath: /etc/gcs
+              readOnly: true
+      volumes:
+        - name: gcs-key
+          secret:
+            secretName: waypoint-storage-key

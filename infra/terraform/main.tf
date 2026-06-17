@@ -19,6 +19,7 @@ resource "google_project_service" "apis" {
     "compute.googleapis.com",
     "artifactregistry.googleapis.com",
     "iam.googleapis.com",
+    "storage.googleapis.com",
   ])
   service            = each.value
   disable_on_destroy = false
@@ -37,6 +38,14 @@ module "artifact_registry" {
   source     = "./modules/artifact-registry"
   region     = var.region
   project_id = var.project_id
+
+  depends_on = [google_project_service.apis]
+}
+
+module "gcs_bucket" {
+  source = "./modules/gcs-bucket"
+
+  public_read = var.public_read
 
   depends_on = [google_project_service.apis]
 }

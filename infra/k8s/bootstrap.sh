@@ -39,6 +39,15 @@ else
   echo "created waypoint-secrets"
 fi
 
+# --- GCS storage key (profile-service reads it to upload images) ---
+if kubectl get secret waypoint-storage-key -n "$NS" >/dev/null 2>&1; then
+  echo "waypoint-storage-key exists, leaving it untouched"
+else
+  kubectl create secret generic waypoint-storage-key -n "$NS" \
+    --from-file=key.json="$ROOT/secrets/waypoint-storage-key.json"
+  echo "created waypoint-storage-key"
+fi
+
 # --- image-pull secret from the Terraform-managed deployer key ---
 if kubectl get secret regcred -n "$NS" >/dev/null 2>&1; then
   echo "regcred exists, leaving it untouched"

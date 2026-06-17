@@ -42,3 +42,9 @@ variable "k3s_api_source_ranges" {
   type        = list(string)
   default     = ["0.0.0.0/0"]
 }
+
+variable "public_read" {
+  description = "Grant public read on the image bucket. Set false to take it private."
+  type        = bool
+  default     = true
+}
