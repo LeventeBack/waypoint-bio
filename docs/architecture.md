@@ -28,14 +28,12 @@ sequenceDiagram
   participant A as analytics-service
   B->>F: GET /<username>
   F->>R: GET /<username>
-  alt cache hit
-    R-->>F: profile JSON (X-Cache: HIT)
-  else cache miss
+  opt cache miss
     R->>P: GET /profiles/<username>
     P-->>R: profile JSON
-    R->>R: cache in Redis (TTL)
-    R-->>F: profile JSON (X-Cache: MISS)
+    R->>R: store in Redis (TTL)
   end
+  R-->>F: profile JSON (X-Cache: HIT or MISS)
   R-)A: view event (async)
 ```
 
