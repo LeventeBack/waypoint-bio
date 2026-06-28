@@ -48,3 +48,9 @@ variable "public_read" {
   type        = bool
   default     = true
 }
+
+variable "force_destroy" {
+  description = "Allow Terraform to delete the image bucket even when it still contains objects. Set true (e.g. -var force_destroy=true) only when tearing the bucket down."
+  type        = bool
+  default     = false
+}

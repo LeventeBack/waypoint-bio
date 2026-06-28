@@ -21,3 +21,9 @@ variable "public_read" {
   type        = bool
   default     = true
 }
+
+variable "force_destroy" {
+  description = "Allow Terraform to delete the bucket even when it still contains objects. Keep false in normal operation; set true only when intentionally tearing the bucket down."
+  type        = bool
+  default     = false
+}

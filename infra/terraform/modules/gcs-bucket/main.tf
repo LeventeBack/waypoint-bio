@@ -3,6 +3,7 @@ resource "google_storage_bucket" "images" {
   location                    = var.location
   uniform_bucket_level_access = true
   public_access_prevention    = "inherited"
+  force_destroy               = var.force_destroy
 
   labels = {
     managed-by = "terraform"

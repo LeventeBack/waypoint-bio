@@ -45,7 +45,8 @@ module "artifact_registry" {
 module "gcs_bucket" {
   source = "./modules/gcs-bucket"
 
-  public_read = var.public_read
+  public_read   = var.public_read
+  force_destroy = var.force_destroy
 
   depends_on = [google_project_service.apis]
 }
