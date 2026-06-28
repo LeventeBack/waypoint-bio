@@ -5,8 +5,6 @@ their avatar, display name, bio, and a list of links, with click analytics behin
 it. Built as a small set of independent services so each part owns its own data
 and scales on its own.
 
-Live demo (HTTP, no TLS): **http://app.34.52.151.85.nip.io**
-
 ![Public profile](docs/images/public-profile.jpeg)
 
 ## Screenshots
